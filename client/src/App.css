@@ -1,0 +1,37 @@
+.findSelector{
+  margin-bottom: 20px;
+}
+.findTitle{
+  margin-bottom: 25px;
+}
+.findCard{
+  padding: 10px;
+  margin: 50px 20px;
+  text-align: center;
+  border: none !important;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+.findCard p{
+  margin-bottom: 8px !important;
+}
+.logoImgFind{
+  width: 150px;
+  height: auto;
+  margin: auto;
+}
+.react-multiple-carousel__arrow--left {
+  left: calc(0% + 0px);
+}
+.react-multiple-carousel__arrow--right {
+  right: calc(0% + 1px);
+}
+.referFrindImgDiv{
+  display: flex;
+  justify-content: center;
+}
+.referFrindImg{
+  width: 30%;
+}
+.referTitle{
+  text-align: center;
+}
