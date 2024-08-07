@@ -74,10 +74,6 @@ const Visitor = () => {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL_COFFEE}/api/auth/create/visitor-details`,
         visitorData,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          //  withCredentials: true 
-        }
       );
       setIsModalOpen(true);
     } catch (error) {
