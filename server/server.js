@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
+const cookieParser = require("cookie-parser");
 // const path = require("path");
 require("dotenv").config();
 // const axios = require("axios");
@@ -36,6 +37,7 @@ mongoose
 
 //middlewares
 app.use(morgan("dev"));
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("files"));

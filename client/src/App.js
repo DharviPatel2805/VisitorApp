@@ -1,16 +1,19 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter ,Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Visitor from "./pages/Visitor";
+import ThankYou from "./pages/ThankYou";
 
 const App = () => {
   return (
-    <Router>
-      <Switch>
-        <Route path="/visitor" component={Visitor} />
-        <Route path="/" component={Login} />
-      </Switch>
-    </Router>
+    <BrowserRouter>
+    <Routes>
+        <Route path="/visitor" element={<Visitor/>} />
+        <Route path="/" element={<Login />} />
+        <Route path="/profile" element={<Login />} />
+        <Route path="/thank-you" element={<ThankYou />} />
+    </Routes>
+    </BrowserRouter>
   );
 };
 

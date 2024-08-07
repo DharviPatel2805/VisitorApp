@@ -6,6 +6,7 @@ const {
   updateVisitorDetails,
   removeVisitorDetails,
 } = require("../controllers/VisitorDetails");
+const {verifyToken} = require("../middlewares/auth");
 
 const router = express.Router();
 
@@ -18,5 +19,21 @@ router.get("/auth/get/visitor-details/:_id", getVisitorDetails);
 router.put("/auth/update/visitor-details/:_id", updateVisitorDetails);
 
 router.delete("/auth/remove/visitor-details/:_id", removeVisitorDetails);
+
+router.get('/test-set-cookie', (req, res) => {
+  res.cookie('accessToken', 'test-token-value', {
+    httpOnly: true,
+    secure: false, 
+    sameSite: 'strict',
+  });
+  res.send('Cookie has been set');
+});
+
+router.get('/test-get-cookie', (req, res) => {
+  console.log("Cookies:", req.cookies);
+  res.send('Check the console for cookies');
+});
+
+
 
 module.exports = router;

@@ -1,11 +1,5 @@
-// staff_member_id,
-// VisitorDetails_id,
-// Reason,
-// State,
-// visiting datetime on confining visiting,
-// notification should be send to Staff member through SmS Confirm
-
 const VisitorDetails = require("../models/VisitorDetails");
+
 
 exports.createVisitorDetails = async (req, res) => {
   try {

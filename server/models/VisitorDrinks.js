@@ -15,10 +15,10 @@ const VistorDrinksSchema = new mongoose.Schema(
       drink_id: {
         type: Schema.Types.ObjectId,
         ref: "Drink",
-        required: true,
+        // required: true,
       },
       drinkState: {
-        type: Boolean,    //YES, DELIVERD, NO
+        type: Boolean,    //true, false
         required: true,
         default: false,
       },

@@ -1,28 +1,32 @@
-// Name
-// Mobile
-// address 
-// sign in datetime
-
-
 const Visitor = require("../models/Visitor");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = 'your_jwt_secret'; 
+
+const generateAccessToken = (userId) => {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
+};
 
 exports.createVisitor = async (req, res) => {
   try {
     const resData= await Visitor(req.body).save();
-    // const isMatch = await bcrypt.compare(Password, user.Password);
-    // if (!isMatch) {
-    //   return res.status(400).json({ msg: "Invalid credentials" });
-    // }
+    
+    const accessToken = generateAccessToken(resData._id);
+    console.log(accessToken)
 
-    // Create and assign token
-    const token = jwt.sign({ id: resData._id }, process.env.JWT_TOKEN, { expiresIn: "1h" });
-    res.status(200).json({ data: resData, token});
+    res.cookie('accessToken', accessToken, {
+      httpOnly: false,
+      secure: false, 
+      sameSite: 'lax',
+    });
+
+    res.status(200).json({ data: resData, token: accessToken});
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err });
   }
 };
+
 
 exports.listVisitor = async (req, res) => {
     try {

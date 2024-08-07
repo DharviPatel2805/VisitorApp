@@ -2,27 +2,47 @@ import React, { useState, useEffect } from "react";
 import { Row, Col, Input, Button, FormGroup, Label } from "reactstrap";
 import axios from "axios";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
-import './Visitor.css'; 
+import "./Visitor.css";
+import { useNavigate } from "react-router-dom";
+import { clearAccessToken, getGlobalToken } from "../components/Global";
 
 const Visitor = () => {
   const [staffMembers, setStaffMembers] = useState([]);
+  const [drinks, setListOfDrinks] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState([]);
   const [reason, setReason] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [drinkChoice, setDrinkChoice] = useState(null);
 
-  useEffect(() => {
-    const fetchStaffMembers = async () => {
-      try {
-        const response = await axios.get("/api/staff-member");
-        setStaffMembers(response.data);
-      } catch (error) {
-        console.error("Error fetching staff members:", error);
-      }
-    };
+  const navigate = useNavigate();
 
+  useEffect(() => {
     fetchStaffMembers();
+    fetchDrinks();
   }, []);
+
+  const fetchStaffMembers = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL_COFFEE}/api/auth/list/staff-member`
+      );
+      setStaffMembers(response.data.data);
+    } catch (error) {
+      console.error("Error fetching staff members:", error);
+    }
+  };
+
+  const fetchDrinks = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL_COFFEE}/api/auth/list/drink`
+      );
+      // console.log("drink", response);
+      setListOfDrinks(response.data.data);
+    } catch (error) {
+      console.error("Error fetching staff members:", error);
+    }
+  };
 
   const handleAddStaffMember = () => {
     setSelectedStaff([...selectedStaff, ""]);
@@ -48,35 +68,66 @@ const Visitor = () => {
       reason,
     };
 
+    const token = getGlobalToken();
+
     try {
-      const response = await axios.post("/api/visitor-details", visitorData);
-      console.log("Visitor logged:", response.data);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL_COFFEE}/api/auth/create/visitor-details`,
+        visitorData,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          //  withCredentials: true 
+        }
+      );
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error logging visitor:", error);
+      if (error.response && error.response.status === 401) {
+        console.error("Invalid or expired token.");
+        clearAccessToken(); 
+        navigate('/');
+      } 
+      // else {
+      // }
     }
   };
 
-  const handleDrinkChoice = async (choice) => {
-    setDrinkChoice(choice);
+  const handleDrinkChoice = async (e) => {
+    e.preventDefault();
     setIsModalOpen(false);
     let drinkId = null;
+    let State = false;
 
-    if(drinkChoice == "coffee"){
-      drinkId = "66a222a44ba591f1f06bf96b";
-    }else if(drinkChoice == "tea"){
-      drinkId = "66a222984ba591f1f06bf969";
+    if (drinkChoice == "none") {
+      drinkId = null;
+      State = false;
+    } else {
+      drinkId = drinkChoice;
+      State = true;
     }
 
     const drinkData = {
-      visitor_id: localStorage.getItem("visitor"), 
-      drink_id: drinkId, 
-      drinkState: choice === 'yes',
+      visitor_id: localStorage.getItem("visitor"),
+      drink_id: drinkId,
+      drinkState: State,
     };
 
     try {
-      const response = await axios.post("/api/drink", drinkData);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL_COFFEE}/api/auth/create/visitor-drinks`,
+        drinkData
+      );
       console.log("Drink choice logged:", response.data);
+      if (response.data) {
+        const staffMemberNames = selectedStaff.map(
+          (staffId) => staffMembers.find((staff) => staff._id === staffId)?.Name
+        );
+        localStorage.removeItem("token");
+        localStorage.removeItem("visitor");
+        navigate("/thank-you", {
+          state: { staffMemberNames: staffMemberNames, drinkChoice },
+        });
+      }
     } catch (error) {
       console.error("Error logging drink choice:", error);
     }
@@ -84,7 +135,10 @@ const Visitor = () => {
 
   return (
     <div className="visitor-container">
-      <div className="form-container">
+      <div
+        className="form-container"
+        style={{ backgroundColor: "rgb(227, 243, 249)" }}
+      >
         <form onSubmit={handleSubmit}>
           {selectedStaff.map((staff, index) => (
             <FormGroup key={index}>
@@ -100,13 +154,13 @@ const Visitor = () => {
                   <option value="">Select Staff Member</option>
                   {staffMembers.map((staffMember) => (
                     <option key={staffMember._id} value={staffMember._id}>
-                      {staffMember.name}
+                      {staffMember.Name}
                     </option>
                   ))}
                 </Input>
                 <Button
-                  color="danger"
-                  className="ml-2"
+                  color="light"
+                  className="ml-2 btn btn-outline-danger"
                   onClick={() => handleRemoveStaffMember(index)}
                 >
                   Remove
@@ -114,8 +168,12 @@ const Visitor = () => {
               </div>
             </FormGroup>
           ))}
-          <Button color="primary" onClick={handleAddStaffMember}>
-            Add Staff Member
+          <Button
+            className="btn btn-outline-info"
+            color="light"
+            onClick={handleAddStaffMember}
+          >
+            + Staff Member
           </Button>
 
           <FormGroup className="mt-3">
@@ -125,53 +183,45 @@ const Visitor = () => {
               name="reason"
               id="reasonInput"
               value={reason}
+              style={{ height: "100px" }}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Enter Reason for Visit"
             />
           </FormGroup>
           <div className="d-flex justify-content-center">
-            <Button type="submit" className="btn btn-info">
+            <Button type="submit" className="btn btn-md btn-info mt-2">
               Submit
             </Button>
           </div>
         </form>
 
+        {/* drink choice */}
         <Modal isOpen={isModalOpen}>
           <ModalHeader>Drink Choice</ModalHeader>
           <ModalBody>
             <FormGroup tag="fieldset">
-              <legend>Would you like coffee or tea?</legend>
-              <FormGroup check>
-                <Label check>
-                  <Input
-                    type="radio"
-                    name="drinkChoice"
-                    value="coffee"
-                    checked={drinkChoice === 'coffee'}
-                    onChange={(e) => setDrinkChoice(e.target.value)}
-                  />
-                  Coffee
-                </Label>
-              </FormGroup>
-              <FormGroup check>
-                <Label check>
-                  <Input
-                    type="radio"
-                    name="drinkChoice"
-                    value="tea"
-                    checked={drinkChoice === 'tea'}
-                    onChange={(e) => setDrinkChoice(e.target.value)}
-                  />
-                  Tea
-                </Label>
-              </FormGroup>
+              <legend>Would you like to have coffee or tea?</legend>
+              {drinks.map((drink) => (
+                <FormGroup check key={drink._id}>
+                  <Label check>
+                    <Input
+                      type="radio"
+                      name="drinkChoice"
+                      value={drink._id} // Assuming drink.Name is 'Coffee' or 'Tea'
+                      checked={drinkChoice === drink._id}
+                      onChange={(e) => setDrinkChoice(e.target.value)}
+                    />
+                    {drink.Name}
+                  </Label>
+                </FormGroup>
+              ))}
               <FormGroup check>
                 <Label check>
                   <Input
                     type="radio"
                     name="drinkChoice"
                     value="none"
-                    checked={drinkChoice === 'none'}
+                    checked={drinkChoice === "none"}
                     onChange={(e) => setDrinkChoice(e.target.value)}
                   />
                   None
@@ -180,8 +230,12 @@ const Visitor = () => {
             </FormGroup>
           </ModalBody>
           <ModalFooter>
-            <Button color="primary" onClick={handleDrinkChoice}>Submit</Button>
-            <Button color="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button color="primary" onClick={handleDrinkChoice}>
+              Submit
+            </Button>
+            <Button color="secondary" onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
           </ModalFooter>
         </Modal>
       </div>

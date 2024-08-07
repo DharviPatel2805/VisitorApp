@@ -1,7 +1,3 @@
-// Name,
-// Image,
-// serve member_id
-
 const Drinks = require("../models/Drinks");
 
 exports.createDrink = async (req, res) => {

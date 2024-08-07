@@ -7,7 +7,14 @@ const VisitorDrinks = require("../models/VisitorDrinks");
 
 exports.createVisitorDrinks = async (req, res) => {
   try {
-    const resData= await VisitorDrinks(req.body).save();
+    const { drink_id } = req.body;
+
+    // Set drinkid to null if it's not provided or explicitly null
+    const visitorDrinkData = {
+      ...req.body,
+      drink_id: drink_id ? drink_id : null,
+    };
+    const resData= await VisitorDrinks(visitorDrinkData).save();
     res.status(200).json({ data: resData});
   } catch (err) {
     res.status(500).json({ error: err });
