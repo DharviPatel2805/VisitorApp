@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = 'your_jwt_secret'; 
 
 const generateAccessToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1h' });
 };
 
 exports.createVisitor = async (req, res) => {
@@ -17,7 +17,7 @@ exports.createVisitor = async (req, res) => {
     res.cookie('accessToken', accessToken, {
       httpOnly: false,
       secure: false, 
-      sameSite: 'lax',
+      sameSite: 'strict',
     });
 
     res.status(200).json({ data: resData, token: accessToken});

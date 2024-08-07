@@ -6,7 +6,6 @@ const {
   updateVisitorDetails,
   removeVisitorDetails,
 } = require("../controllers/VisitorDetails");
-const {verifyToken} = require("../middlewares/auth");
 
 const router = express.Router();
 
